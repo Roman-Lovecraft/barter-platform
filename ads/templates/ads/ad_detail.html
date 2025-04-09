@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="ad-detail">
+    <h1>{{ ad.title }}</h1>
+    <p><strong>Description:</strong> {{ ad.description }}</p>
+    <p><strong>Price:</strong> {{ ad.price }}</p>
+    <p><strong>Posted by:</strong> {{ ad.user.username }}</p>
+    <p><strong>Posted on:</strong> {{ ad.created_at|date:"F j, Y" }}</p>
+</div>
+<a href="{% url 'ads:ad_list' %}">Back to Ads List</a>
+{% endblock %}

@@ -2,7 +2,9 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
+from django.contrib import messages
 from .models import Item, Ad
+from .forms import AdForm
 
 def item_list(request):
     ads = Item.objects.all()
@@ -27,9 +29,18 @@ class AdDetailView(DetailView):
 
 class AdCreateView(CreateView):
     model = Ad
+    form_class = AdForm
     template_name = 'ads/ad_form.html'
-    fields = ['title', 'description']
-    success_url = reverse_lazy('ad-list')
+    success_url = '/'
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        messages.success(self.request, "Объявление успешно создано!")
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, "Ошибка при создании объявления. Проверьте введенные данные.")
+        return super().form_invalid(form)
 
 class AdUpdateView(UpdateView):
     model = Ad
@@ -40,7 +51,11 @@ class AdUpdateView(UpdateView):
 class AdDeleteView(DeleteView):
     model = Ad
     template_name = 'ads/ad_confirm_delete.html'
-    success_url = reverse_lazy('ad-list')
+    success_url = '/'
+
+    def delete(self, request, *args, **kwargs):
+        messages.success(self.request, "Объявление успешно удалено!")
+        return super().delete(request, *args, **kwargs)
 
 def create_proposal(request, pk):
     # Логика для создания предложения

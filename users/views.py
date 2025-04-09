@@ -38,7 +38,8 @@ class AdCreateView(LoginRequiredMixin, CreateView):
     model = Ad
     form_class = AdForm
     template_name = 'ads/ad_form.html'
-    
+    success_url = reverse_lazy('ad-list')
+
     def form_valid(self, form):
         form.instance.user = self.request.user
         return super().form_valid(form)
@@ -47,19 +48,20 @@ class AdUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Ad
     form_class = AdForm
     template_name = 'ads/ad_form.html'
-    
+    success_url = reverse_lazy('ad-list')
+
     def test_func(self):
         ad = self.get_object()
-        return self.request.user == ad.user
+        return ad.user == self.request.user
 
 class AdDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Ad
     template_name = 'ads/ad_confirm_delete.html'
     success_url = reverse_lazy('ad-list')
-    
+
     def test_func(self):
         ad = self.get_object()
-        return self.request.user == ad.user
+        return ad.user == self.request.user
 
 @login_required
 def create_proposal(request, pk):
