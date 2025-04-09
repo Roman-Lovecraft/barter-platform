@@ -20,7 +20,7 @@ class TradeOffer(models.Model):
         return f"{self.proposer.username} offers {self.item_offered.name} for {self.item_requested.name}"
 
 class Ad(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='ads_ads')
     title = models.CharField(max_length=200)
     description = models.TextField()
     image = models.ImageField(upload_to='ads/', null=True, blank=True)

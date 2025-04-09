@@ -17,12 +17,12 @@ class Ad(models.Model):
         ('broken', 'Требует ремонта'),
     ]
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='users_ads', default=1)
     title = models.CharField(max_length=200)
     description = models.TextField()
     image = models.ImageField(upload_to='ads/', null=True, blank=True)
-    category = models.CharField(max_length=50)
-    condition = models.CharField(max_length=50)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='other')
+    condition = models.CharField(max_length=50, choices=CONDITION_CHOICES, default='new')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
