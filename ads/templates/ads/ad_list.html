@@ -1,31 +1,31 @@
 {% extends 'ads/base.html' %}
 
 {% block content %}
-<h1 class="mb-4">Объявления</h1>
+<h1 class="mb-4">Список объявлений</h1>
 
 <form method="get" class="mb-4">
     <div class="row g-3">
         <div class="col-md-4">
-            <input type="text" name="search" class="form-control" placeholder="Поиск..." value="{{ request.GET.search }}">
+            <input type="text" name="q" class="form-control" placeholder="Поиск..." value="{{ request.GET.q }}">
         </div>
         <div class="col-md-3">
             <select name="category" class="form-select">
                 <option value="">Все категории</option>
-                {% for value, label in view.model.category.field.choices %}
-                    <option value="{{ value }}" {% if request.GET.category == value %}selected{% endif %}>{{ label }}</option>
+                {% for key, value in ads.CATEGORY_CHOICES %}
+                    <option value="{{ key }}" {% if request.GET.category == key %}selected{% endif %}>{{ value }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="col-md-3">
             <select name="condition" class="form-select">
-                <option value="">Любое состояние</option>
-                {% for value, label in view.model.condition.field.choices %}
-                    <option value="{{ value }}" {% if request.GET.condition == value %}selected{% endif %}>{{ label }}</option>
+                <option value="">Все состояния</option>
+                {% for key, value in ads.CONDITION_CHOICES %}
+                    <option value="{{ key }}" {% if request.GET.condition == key %}selected{% endif %}>{{ value }}</option>
                 {% endfor %}
             </select>
         </div>
         <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">Найти</button>
+            <button type="submit" class="btn btn-primary w-100">Фильтровать</button>
         </div>
     </div>
 </form>
@@ -46,7 +46,7 @@
                     </div>
                 </div>
                 <div class="card-footer bg-transparent">
-                    <a href="{% url 'ad-detail' ad.pk %}" class="btn btn-sm btn-outline-primary">Подробнее</a>
+                    <a href="{% url 'ads:ad-detail' ad.pk %}" class="btn btn-sm btn-outline-primary">Подробнее</a>
                     <small class="text-muted float-end">{{ ad.created_at|date:"d.m.Y" }}</small>
                 </div>
             </div>
@@ -63,10 +63,10 @@
     <ul class="pagination justify-content-center">
         {% if page_obj.has_previous %}
             <li class="page-item">
-                <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Первая</a>
+                <a class="page-link" href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Первая</a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Назад</a>
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Назад</a>
             </li>
         {% endif %}
         
@@ -74,16 +74,16 @@
             {% if page_obj.number == num %}
                 <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
             {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <li class="page-item"><a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ num }}</a></li>
             {% endif %}
         {% endfor %}
         
         {% if page_obj.has_next %}
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Вперед</a>
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Вперед</a>
             </li>
             <li class="page-item">
-                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Последняя</a>
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Последняя</a>
             </li>
         {% endif %}
     </ul>

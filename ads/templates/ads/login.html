@@ -1,0 +1,13 @@
+<!-- filepath: c:\python\barter-platform\ads\templates\ads\login.html -->
+{% extends 'ads/base.html' %}
+
+{% block content %}
+<div class="login-form">
+    <h2>Войти</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Войти</button>
+    </form>
+</div>
+{% endblock %}

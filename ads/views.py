@@ -1,8 +1,10 @@
-from django.shortcuts import render
-from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse, HttpResponseForbidden
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from .models import Item, Ad
 from .forms import AdForm
 
@@ -16,6 +18,22 @@ def item_detail(request, item_id):
         return JsonResponse({'item': {'id': item.id, 'name': item.name, 'description': item.description}})
     except Item.DoesNotExist:
         return JsonResponse({'error': 'Item not found'}, status=404)
+
+def ad_list(request):
+    query = request.GET.get('q', '')
+    category = request.GET.get('category', '')
+    condition = request.GET.get('condition', '')
+    
+    ads = Ad.objects.all()
+    
+    if query:
+        ads = ads.filter(Q(title__icontains=query) | Q(description__icontains=query))
+    if category:
+        ads = ads.filter(category=category)
+    if condition:
+        ads = ads.filter(condition=condition)
+    
+    return render(request, 'ads/ad_list.html', {'ads': ads})
 
 class AdListView(ListView):
     model = Ad
@@ -60,3 +78,42 @@ class AdDeleteView(DeleteView):
 def create_proposal(request, pk):
     # Логика для создания предложения
     return JsonResponse({'message': 'Proposal created successfully'})
+
+@login_required
+def create_ad(request):
+    if request.method == 'POST':
+        form = AdForm(request.POST, request.FILES)
+        if form.is_valid():
+            ad = form.save(commit=False)
+            ad.user = request.user
+            ad.save()
+            return redirect('ads:ad-detail', pk=ad.pk)
+    else:
+        form = AdForm()
+    return render(request, 'ads/ad_form.html', {'form': form})
+
+@login_required
+def update_ad(request, pk):
+    ad = get_object_or_404(Ad, pk=pk)
+    if ad.user != request.user:
+        return HttpResponseForbidden("Вы не являетесь автором этого объявления.")
+    
+    if request.method == 'POST':
+        form = AdForm(request.POST, request.FILES, instance=ad)
+        if form.is_valid():
+            form.save()
+            return redirect('ads:ad-detail', pk=ad.pk)
+    else:
+        form = AdForm(instance=ad)
+    return render(request, 'ads/ad_form.html', {'form': form})
+
+@login_required
+def delete_ad(request, pk):
+    ad = get_object_or_404(Ad, pk=pk)
+    if ad.user != request.user:
+        return HttpResponseForbidden("Вы не являетесь автором этого объявления.")
+    
+    if request.method == 'POST':
+        ad.delete()
+        return redirect('ads:ad-list')
+    return render(request, 'ads/ad_confirm_delete.html', {'ad': ad})
