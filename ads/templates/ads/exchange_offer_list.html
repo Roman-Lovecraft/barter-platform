@@ -1,0 +1,15 @@
+<!-- filepath: c:\python\barter-platform\ads\templates\ads\exchange_offer_list.html -->
+{% extends 'ads/base.html' %}
+
+{% block content %}
+<h2>Список предложений обмена</h2>
+<ul>
+    {% for offer in offers %}
+        <li>
+            {{ offer.ad_sender.title }} → {{ offer.ad_receiver.title }} ({{ offer.get_status_display }})
+        </li>
+    {% empty %}
+        <li>Нет предложений.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

@@ -47,3 +47,19 @@ class ExchangeProposal(models.Model):
 
     def __str__(self):
         return f"Proposal from {self.ad_sender} to {self.ad_receiver}"
+
+class ExchangeOffer(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Ожидает'),
+        ('accepted', 'Принята'),
+        ('rejected', 'Отклонена'),
+    ]
+
+    ad_sender = models.ForeignKey(Ad, on_delete=models.CASCADE, related_name='sent_offers')
+    ad_receiver = models.ForeignKey(Ad, on_delete=models.CASCADE, related_name='received_offers')
+    comment = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Offer from {self.ad_sender} to {self.ad_receiver} ({self.status})"

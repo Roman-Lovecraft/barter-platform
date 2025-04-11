@@ -1,0 +1,16 @@
+<!-- filepath: c:\python\barter-platform\ads\templates\ads\exchange_offer_update.html -->
+{% extends 'ads/base.html' %}
+
+{% block content %}
+<h2>Обновить статус предложения</h2>
+<form method="post">
+    {% csrf_token %}
+    <label for="status">Статус:</label>
+    <select name="status">
+        {% for key, value in offer.STATUS_CHOICES %}
+            <option value="{{ key }}" {% if offer.status == key %}selected{% endif %}>{{ value }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary">Обновить</button>
+</form>
+{% endblock %}

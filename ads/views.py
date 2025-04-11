@@ -4,8 +4,9 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
-from .models import Item, Ad
+from .models import Item, Ad, ExchangeOffer
 from .forms import AdForm
 
 def item_list(request):
@@ -117,3 +118,60 @@ def delete_ad(request, pk):
         ad.delete()
         return redirect('ads:ad-list')
     return render(request, 'ads/ad_confirm_delete.html', {'ad': ad})
+
+@login_required
+def create_exchange_offer(request):
+    if request.method == 'POST':
+        ad_sender_id = request.POST.get('ad_sender_id')
+        ad_receiver_id = request.POST.get('ad_receiver_id')
+        comment = request.POST.get('comment')
+
+        ad_sender = get_object_or_404(Ad, id=ad_sender_id, user=request.user)
+        ad_receiver = get_object_or_404(Ad, id=ad_receiver_id)
+
+        offer = ExchangeOffer.objects.create(
+            ad_sender=ad_sender,
+            ad_receiver=ad_receiver,
+            comment=comment
+        )
+        return redirect('ads:ad-list')
+
+    return render(request, 'ads/exchange_offer_form.html')
+
+@login_required
+def update_exchange_offer(request, pk):
+    offer = get_object_or_404(ExchangeOffer, pk=pk)
+    if request.method == 'POST':
+        status = request.POST.get('status')
+        if status in dict(ExchangeOffer.STATUS_CHOICES):
+            offer.status = status
+            offer.save()
+            return redirect('ads:ad-list')
+    return render(request, 'ads/exchange_offer_update.html', {'offer': offer})
+
+@login_required
+def exchange_offer_list(request):
+    offers = ExchangeOffer.objects.all()
+
+    sender_id = request.GET.get('sender_id')
+    receiver_id = request.GET.get('receiver_id')
+    status = request.GET.get('status')
+
+    if sender_id:
+        offers = offers.filter(ad_sender_id=sender_id)
+    if receiver_id:
+        offers = offers.filter(ad_receiver_id=receiver_id)
+    if status:
+        offers = offers.filter(status=status)
+
+    return render(request, 'ads/exchange_offer_list.html', {'offers': offers})
+
+def register(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form = UserCreationForm()
+    return render(request, 'ads/register.html', {'form': form})
