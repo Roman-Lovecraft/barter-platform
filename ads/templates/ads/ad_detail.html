@@ -3,11 +3,23 @@
 {% block content %}
 <div class="ad-detail">
     <h1>{{ ad.title }}</h1>
+    {% if ad.image %}
+        <img src="{{ ad.image.url }}" alt="{{ ad.title }}" style="max-width: 400px; max-height: 400px;">
+    {% else %}
+        <p><em>Изображение отсутствует</em></p>
+    {% endif %}
     <p><strong>Описание:</strong> {{ ad.description }}</p>
     <p><strong>Категория:</strong> {{ ad.get_category_display }}</p>
     <p><strong>Состояние:</strong> {{ ad.get_condition_display }}</p>
-    <p><strong>Выложил:</strong> {{ ad.user.username }}</p>
-    <p><strong>Выложено было:</strong> {{ ad.created_at|date:"F j, Y" }}</p>
+    <p><strong>Автор:</strong> {{ ad.user.username }}</p>
+    <p><strong>Дата публикации:</strong> {{ ad.created_at|date:"F j, Y" }}</p>
+    {% if user.is_authenticated and user == ad.user %}
+        <a href="{% url 'ads:ad-update' ad.pk %}" class="btn btn-warning">Редактировать</a>
+        <form method="post" action="{% url 'ads:ad-delete' ad.pk %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Удалить</button>
+        </form>
+    {% endif %}
 </div>
-<a href="{% url 'ads:ad-list' %}">Вернуться к списку</a>
+<a href="{% url 'ads:ad-list' %}">Обратно к списку</a>
 {% endblock %}

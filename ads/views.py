@@ -86,7 +86,7 @@ def create_ad(request):
         form = AdForm(request.POST, request.FILES)
         if form.is_valid():
             ad = form.save(commit=False)
-            ad.user = request.user
+            ad.user = request.user  # Привязываем объявление к текущему пользователю
             ad.save()
             return redirect('ads:ad-detail', pk=ad.pk)
     else:
@@ -126,45 +126,60 @@ def create_exchange_offer(request):
         ad_receiver_id = request.POST.get('ad_receiver_id')
         comment = request.POST.get('comment')
 
+        # Получаем объявления отправителя и получателя
         ad_sender = get_object_or_404(Ad, id=ad_sender_id, user=request.user)
         ad_receiver = get_object_or_404(Ad, id=ad_receiver_id)
 
-        offer = ExchangeOffer.objects.create(
+        # Создаем предложение обмена
+        ExchangeOffer.objects.create(
             ad_sender=ad_sender,
             ad_receiver=ad_receiver,
             comment=comment
         )
-        return redirect('ads:ad-list')
+        return redirect('ads:exchange-offer-list')
 
-    return render(request, 'ads/exchange_offer_form.html')
+    # Передаем объявления текущего пользователя и других пользователей
+    user_ads = Ad.objects.filter(user=request.user)
+    other_ads = Ad.objects.exclude(user=request.user)
+    return render(request, 'ads/exchange_offer_form.html', {'user_ads': user_ads, 'other_ads': other_ads})
 
 @login_required
 def update_exchange_offer(request, pk):
     offer = get_object_or_404(ExchangeOffer, pk=pk)
+    if offer.ad_receiver.user != request.user:  # Проверяем, является ли пользователь получателем
+        return HttpResponseForbidden("Вы не можете изменить статус этого предложения.")
+    
     if request.method == 'POST':
         status = request.POST.get('status')
         if status in dict(ExchangeOffer.STATUS_CHOICES):
             offer.status = status
             offer.save()
-            return redirect('ads:ad-list')
+            return redirect('ads:exchange-offer-list')
     return render(request, 'ads/exchange_offer_update.html', {'offer': offer})
 
 @login_required
 def exchange_offer_list(request):
-    offers = ExchangeOffer.objects.all()
+    # Получаем предложения, где пользователь является отправителем или получателем
+    sent_offers = ExchangeOffer.objects.filter(ad_sender__user=request.user)
+    received_offers = ExchangeOffer.objects.filter(ad_receiver__user=request.user)
 
+    # Фильтрация по параметрам (если требуется)
     sender_id = request.GET.get('sender_id')
     receiver_id = request.GET.get('receiver_id')
     status = request.GET.get('status')
 
     if sender_id:
-        offers = offers.filter(ad_sender_id=sender_id)
+        sent_offers = sent_offers.filter(ad_sender_id=sender_id)
     if receiver_id:
-        offers = offers.filter(ad_receiver_id=receiver_id)
+        received_offers = received_offers.filter(ad_receiver_id=receiver_id)
     if status:
-        offers = offers.filter(status=status)
+        sent_offers = sent_offers.filter(status=status)
+        received_offers = received_offers.filter(status=status)
 
-    return render(request, 'ads/exchange_offer_list.html', {'offers': offers})
+    return render(request, 'ads/exchange_offer_list.html', {
+        'sent_offers': sent_offers,
+        'received_offers': received_offers,
+    })
 
 def register(request):
     if request.method == 'POST':

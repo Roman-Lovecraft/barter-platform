@@ -2,10 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Item(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=100)
     description = models.TextField()
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)  # Поле owner связано с пользователем
 
     def __str__(self):
         return self.name

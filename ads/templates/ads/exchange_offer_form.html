@@ -1,4 +1,3 @@
-<!-- filepath: c:\python\barter-platform\ads\templates\ads\exchange_offer_form.html -->
 {% extends 'ads/base.html' %}
 
 {% block content %}
@@ -7,13 +6,13 @@
     {% csrf_token %}
     <label for="ad_sender_id">Ваше объявление:</label>
     <select name="ad_sender_id">
-        {% for ad in user.users_ads.all %}
+        {% for ad in user_ads %}
             <option value="{{ ad.id }}">{{ ad.title }}</option>
         {% endfor %}
     </select>
     <label for="ad_receiver_id">Объявление получателя:</label>
     <select name="ad_receiver_id">
-        {% for ad in ads %}
+        {% for ad in other_ads %}
             <option value="{{ ad.id }}">{{ ad.title }}</option>
         {% endfor %}
     </select>

@@ -2,14 +2,43 @@
 {% extends 'ads/base.html' %}
 
 {% block content %}
-<h2>Список предложений обмена</h2>
+<h2>Мои предложения обмена</h2>
+
+<h3>Отправленные предложения</h3>
 <ul>
-    {% for offer in offers %}
+    {% for offer in sent_offers %}
         <li>
-            {{ offer.ad_sender.title }} → {{ offer.ad_receiver.title }} ({{ offer.get_status_display }})
+            Вы предложили обмен: "{{ offer.ad_sender.title }}" → "{{ offer.ad_receiver.title }}"<br>
+            Статус: {{ offer.get_status_display }}<br>
+            Комментарий: {{ offer.comment|default:"Нет комментария" }}
         </li>
     {% empty %}
-        <li>Нет предложений.</li>
+        <li>Вы еще не отправляли предложения обмена.</li>
+    {% endfor %}
+</ul>
+
+<h3>Полученные предложения</h3>
+<ul>
+    {% for offer in received_offers %}
+        <li>
+            Вам предложили обмен: "{{ offer.ad_sender.title }}" → "{{ offer.ad_receiver.title }}"<br>
+            Статус: {{ offer.get_status_display }}<br>
+            Комментарий: {{ offer.comment|default:"Нет комментария" }}<br>
+            {% if offer.status == 'pending' %}
+                <form method="post" action="{% url 'ads:exchange-offer-update' offer.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="accepted">
+                    <button type="submit" class="btn btn-success">Принять</button>
+                </form>
+                <form method="post" action="{% url 'ads:exchange-offer-update' offer.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" value="rejected">
+                    <button type="submit" class="btn btn-danger">Отклонить</button>
+                </form>
+            {% endif %}
+        </li>
+    {% empty %}
+        <li>У вас нет полученных предложений обмена.</li>
     {% endfor %}
 </ul>
 {% endblock %}
